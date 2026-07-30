@@ -2,26 +2,33 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Drafting instrument: blueprint ink, warm chalk, brass, patina. */
 :root {
-  --background: #0a0a0f;
-  --foreground: #e4e4e7;
-  --accent: #3b82f6;
-  --accent-light: #60a5fa;
-  --highlight: #f59e0b;
-  --surface: #18181b;
-  --muted: #71717a;
-  --border-color: #27272a;
+  --background: #0e141b;
+  --surface: #151d26;
+  --surface-2: #1b242f;
+  --foreground: #e8e4dc;
+  --muted: #8b96a3;
+  --brass: #c89b4a;
+  --brass-light: #dcb469;
+  --patina: #5aa896;
+  --rule: #24303c;
+  --rule-strong: #33424f;
+  --on-brass: #0e141b;
 }
 
 [data-theme="light"] {
-  --background: #f8f9fa;
-  --foreground: #1a1a2e;
-  --accent: #2563eb;
-  --accent-light: #3b82f6;
-  --highlight: #d97706;
+  --background: #f7f4ee;
   --surface: #ffffff;
-  --muted: #6b7280;
-  --border-color: #e5e7eb;
+  --surface-2: #fbf9f5;
+  --foreground: #141a21;
+  --muted: #5d6874;
+  --brass: #8a6218;
+  --brass-light: #6f4e10;
+  --patina: #2c7566;
+  --rule: #e2ddd2;
+  --rule-strong: #cec8ba;
+  --on-brass: #fbf9f5;
 }
 
 html {
@@ -31,8 +38,99 @@ html {
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: var(--font-body), system-ui, sans-serif;
   transition: background-color 0.3s, color 0.3s;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background-color: var(--brass);
+  color: var(--on-brass);
+}
+
+:focus-visible {
+  outline: 2px solid var(--brass);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* Measurements — dates, counts, durations — always set in mono.
+   Declared in the components layer so utilities still win over them. */
+@layer components {
+  .readout {
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .label {
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-size: 0.6875rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    line-height: 1.4;
+  }
+}
+
+/* Theme toggle: show the icon for the theme you'd switch to. */
+.icon-light {
+  display: none;
+}
+[data-theme="light"] .icon-dark {
+  display: none;
+}
+[data-theme="light"] .icon-light {
+  display: block;
+}
+
+/* --- The span: to-scale career ruler --- */
+.span-bar {
+  transform-origin: left center;
+  animation: bar-draw 0.85s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes bar-draw {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.rise {
+  animation: rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.now-pip::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background-color: var(--patina);
+  animation: pip 2.4s ease-out infinite;
+}
+
+@keyframes pip {
+  0% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  70%,
+  100% {
+    opacity: 0;
+    transform: scale(2.8);
+  }
 }
 
 @keyframes dot-pulse {
@@ -54,4 +152,23 @@ body {
 }
 .dot-pulse span:nth-child(3) {
   animation: dot-pulse 1.4s infinite 0.4s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .span-bar,
+  .rise,
+  .now-pip::after,
+  .dot-pulse span {
+    animation: none;
+  }
+  .rise {
+    opacity: 1;
+    transform: none;
+  }
+  .span-bar {
+    transform: none;
+  }
 }

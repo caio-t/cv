@@ -13,16 +13,22 @@ function buildSystemPrompt(): string {
     .map((edu) => `- ${edu.degree} at ${edu.institution} (${edu.period})`)
     .join("\n");
 
-  return `You are an AI assistant on Caio Teixeira's professional portfolio website. Answer questions about his professional background based on the following data. Be helpful, concise, and professional. Answer in the same language the user writes in. If asked about something not in the data, say you only have information about his professional profile.
+  const stackText = profile.stack
+    .map((group) => `- ${group.group}: ${group.items.join(", ")}`)
+    .join("\n");
+
+  return `You are an AI assistant on Caio Teixeira's professional portfolio website. Most visitors are recruiters or hiring managers. Answer questions about his professional background based on the following data. Be helpful, concise, and professional. Answer in the same language the user writes in. If asked about something not in the data, say you only have information about his professional profile.
 
 Name: ${profile.name}
-Title: ${profile.title}
+Title: ${profile.title} at ${profile.company}
 Location: ${profile.location}
-Summary: ${profile.summary}
+Career start: ${profile.careerStart}
+Personal motto: ${profile.summary}
 
-Skills: ${profile.skills.join(", ")}
 Languages: ${profile.languages.map((l) => `${l.name} (${l.level})`).join(", ")}
-Publications: ${profile.publications.join(", ")}
+
+Stack:
+${stackText}
 
 Experience:
 ${experienceText}

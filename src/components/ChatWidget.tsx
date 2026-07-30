@@ -1,14 +1,21 @@
 "use client";
 
 import { useState, useRef, useEffect, FormEvent } from "react";
+import { OPEN_CHAT_EVENT } from "./AskButton";
 
 type Message = { role: "user" | "assistant"; content: string };
 
 const WELCOME_MESSAGE: Message = {
   role: "assistant",
   content:
-    "Hi! I'm an AI assistant for Caio's portfolio. Ask me anything about his professional experience, skills, or education.",
+    "Ask me anything about Caio's experience — the projects, the stack, the timeline, or how a role might fit.",
 };
+
+const SUGGESTIONS = [
+  "Summarise his backend experience",
+  "Has he led teams?",
+  "Which frontend frameworks has he shipped?",
+];
 
 export default function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
@@ -26,9 +33,19 @@ export default function ChatWidget() {
     if (isOpen) inputRef.current?.focus();
   }, [isOpen]);
 
+  useEffect(() => {
+    const open = () => setIsOpen(true);
+    window.addEventListener(OPEN_CHAT_EVENT, open);
+    return () => window.removeEventListener(OPEN_CHAT_EVENT, open);
+  }, []);
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    const text = input.trim();
+    await send(input);
+  }
+
+  async function send(raw: string) {
+    const text = raw.trim();
     if (!text || isLoading) return;
 
     const userMessage: Message = { role: "user", content: text };
@@ -73,14 +90,14 @@ export default function ChatWidget() {
 
   if (!isOpen) {
     return (
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+      <div className="fixed bottom-5 right-5 sm:bottom-8 sm:right-8 z-50">
         <button
           onClick={() => setIsOpen(true)}
-          className="flex items-center gap-2 bg-accent hover:bg-accent-light text-white rounded-full shadow-lg px-5 py-3 transition-colors"
+          className="group flex items-center gap-2.5 bg-brass text-on-brass rounded-full shadow-xl px-5 py-3 hover:bg-brass-light transition-colors"
         >
           <svg
-            width="20"
-            height="20"
+            width="18"
+            height="18"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -90,25 +107,30 @@ export default function ChatWidget() {
           >
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
           </svg>
-          <span className="text-sm font-medium">Ask me anything about my experience</span>
+          <span className="readout text-[13px] font-medium">
+            Ask about my work
+          </span>
         </button>
       </div>
     );
   }
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[90vw] max-w-2xl flex flex-col bg-surface border border-border rounded-xl shadow-2xl overflow-hidden max-h-[70vh]">
+    <div className="fixed bottom-5 right-5 left-5 sm:bottom-8 sm:right-8 sm:left-auto sm:w-[27rem] z-50 flex flex-col bg-surface border border-rule-strong rounded-lg shadow-2xl overflow-hidden max-h-[75vh]">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-surface">
-        <span className="font-medium text-sm">Ask me anything about my experience</span>
+      <div className="flex items-center justify-between px-4 py-3 border-b border-rule">
+        <div className="flex items-center gap-2.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-patina" aria-hidden />
+          <span className="label text-muted">Portfolio assistant</span>
+        </div>
         <button
           onClick={() => setIsOpen(false)}
           className="text-muted hover:text-foreground transition-colors"
-          aria-label="Close chat"
+          aria-label="Close assistant"
         >
           <svg
-            width="18"
-            height="18"
+            width="16"
+            height="16"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -123,29 +145,44 @@ export default function ChatWidget() {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3 min-h-[200px]">
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 min-h-[180px]">
         {messages.map((msg, i) => (
           <div
             key={i}
             className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
           >
             <div
-              className={`max-w-[80%] px-3 py-2 rounded-lg text-sm whitespace-pre-wrap ${
+              className={`max-w-[85%] px-3.5 py-2.5 rounded-lg text-sm leading-relaxed whitespace-pre-wrap ${
                 msg.role === "user"
-                  ? "bg-accent text-white rounded-br-none"
-                  : "bg-background text-foreground rounded-bl-none border border-border"
+                  ? "bg-brass text-on-brass rounded-br-sm"
+                  : "bg-surface-2 text-foreground/90 rounded-bl-sm border border-rule"
               }`}
             >
               {msg.content}
             </div>
           </div>
         ))}
+
+        {messages.length === 1 && !isLoading && (
+          <div className="flex flex-col items-start gap-2 pt-1">
+            {SUGGESTIONS.map((s) => (
+              <button
+                key={s}
+                onClick={() => send(s)}
+                className="text-left text-xs text-brass border border-rule hover:border-brass rounded px-2.5 py-1.5 transition-colors"
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        )}
+
         {isLoading && (
           <div className="flex justify-start">
-            <div className="bg-background border border-border rounded-lg rounded-bl-none px-3 py-2 dot-pulse">
-              <span className="inline-block w-2 h-2 bg-muted rounded-full mx-0.5" />
-              <span className="inline-block w-2 h-2 bg-muted rounded-full mx-0.5" />
-              <span className="inline-block w-2 h-2 bg-muted rounded-full mx-0.5" />
+            <div className="bg-surface-2 border border-rule rounded-lg rounded-bl-sm px-3.5 py-3 dot-pulse">
+              <span className="inline-block w-1.5 h-1.5 bg-muted rounded-full mx-0.5" />
+              <span className="inline-block w-1.5 h-1.5 bg-muted rounded-full mx-0.5" />
+              <span className="inline-block w-1.5 h-1.5 bg-muted rounded-full mx-0.5" />
             </div>
           </div>
         )}
@@ -155,21 +192,21 @@ export default function ChatWidget() {
       {/* Input */}
       <form
         onSubmit={handleSubmit}
-        className="flex items-center gap-2 px-4 py-3 border-t border-border"
+        className="flex items-center gap-2 px-3 py-3 border-t border-rule"
       >
         <input
           ref={inputRef}
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Type your question..."
+          placeholder="Ask a question"
           disabled={isLoading}
-          className="flex-1 bg-background border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-accent disabled:opacity-50"
+          className="flex-1 bg-background border border-rule rounded px-3 py-2 text-sm text-foreground placeholder:text-muted focus:outline-none focus:border-brass disabled:opacity-50"
         />
         <button
           type="submit"
           disabled={isLoading || !input.trim()}
-          className="bg-accent hover:bg-accent-light disabled:opacity-50 text-white rounded-lg px-3 py-2 text-sm font-medium transition-colors"
+          className="readout bg-brass text-on-brass hover:bg-brass-light disabled:opacity-40 rounded px-3.5 py-2 text-sm font-medium transition-colors"
         >
           Send
         </button>
