@@ -145,7 +145,9 @@ export const profile = {
   education: [
     {
       institution: "Universidade Federal do Espírito Santo",
-      degree: "Master of Science (MSc), Management Information Systems",
+      // Coursework only; the degree was not completed. Keep this wording in
+      // step with the CVs so the site and the chatbot never claim the MSc.
+      degree: "Master's coursework in Computer Science",
       period: "2012 – 2014",
     },
     {
